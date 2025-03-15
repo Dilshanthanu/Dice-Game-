@@ -10,6 +10,11 @@ class GameViewModal {
     private var _humanScore = mutableStateOf(0)
     private var _computerScore = mutableStateOf(0)
     private var _humanSelectedDice = mutableStateOf(List(5) { 0 })
+    private var _showWonPopup = mutableStateOf(false)
+    private var _showLosePopup = mutableStateOf(false)
+    private var _showTiePopup = mutableStateOf(false)
+    private var _isCalculationCompleted = mutableStateOf(false)
+    private var _targetScore = mutableStateOf(101)
 
 
     val diceNoHuman: List<Int> get() = _diceNoHuman.value
@@ -18,17 +23,28 @@ class GameViewModal {
     val humanScore: Int get() = _humanScore.value
     val computerScore: Int get() = _computerScore.value
     val humanSelectedDice: List<Int> get() = _humanSelectedDice.value
+    val showWonPopup: Boolean get() = _showWonPopup.value
+    val showLosePopup:Boolean get() = _showLosePopup.value
+    val showTiePopup: Boolean get() = _showTiePopup.value
+    val isCalculationCompleted: Boolean get() = _isCalculationCompleted.value
+    val targetScore: Int get() = _targetScore.value
 
-    fun CalculateScore() {
-        _humanScore.value += _diceNoHuman.value.sum()
-        _computerScore.value += _diceNoComputer.value.sum()
-    }
+        fun CalculateScore() {
+            _humanScore.value += _diceNoHuman.value.sum()
+            _computerScore.value += _diceNoComputer.value.sum()
+            _isCalculationCompleted.value = true
+            Result()
+        }
 
     fun TrowOnclickaction() {
         _diceNoHuman.value = HumNDiceThrow()
         _diceNoComputer.value = ComputerDiceThrow()
         _turns.value--
-        CalculateScore()
+        _isCalculationCompleted.value = false
+        if ( CheckResult(_humanScore.value , _computerScore.value)){
+            Result()
+        }
+
 
     }
 
@@ -92,9 +108,34 @@ class GameViewModal {
         }
     }
 
-    fun CheckResult (score : Int){
-        if (score > 101){
-            
+    fun CheckResult (humanscore : Int , computescore : Int):Boolean{
+        if (humanscore < _targetScore.value && computescore < _targetScore.value){
+            _turns.value += 1;
+            return false
+        }else{
+            _turns.value = 0;
+            return true
         }
+    }
+
+    fun Result(){
+        if (_humanScore.value > _computerScore.value ){
+            _showWonPopup.value = true
+
+        }else if (_humanScore.value < _computerScore.value ){
+            _showLosePopup.value = true
+        }else if (_humanScore.value == _computerScore.value ){
+            _showTiePopup.value = true
+            _turns.value +=1
+        }
+    }
+
+    fun ShowPopupDismiss(){
+        _showWonPopup.value = false
+        _showLosePopup.value = false
+    }
+
+    fun updateTargetScore(newScore: Int) {
+        _targetScore.value = newScore
     }
 }

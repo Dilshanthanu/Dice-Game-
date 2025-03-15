@@ -49,7 +49,7 @@ fun GameApp(){
             LandingPage(navController)
         }
         composable(Routes.NewGame){
-            GamePage()
+            GamePage(navController)
         }
 
     })
