@@ -208,5 +208,38 @@ class GameViewModal:ViewModel() {
     fun dicekey(){
         _diceAnimationKey.value++
     }
+    fun isGameDataReset(): Boolean {
+        return _diceNoHuman.value.all { it == 1 } &&
+                _diceNoComputer.value.all { it == 1 } &&
+                _turns.value == 0 &&
+                _humanScore.value == 0 &&
+                _computerScore.value == 0 &&
+                _humanSelectedDice.value.all { it == 0 } &&
+                !_showWonPopup.value &&
+                !_showLosePopup.value &&
+                !_showTiePopup.value &&
+                _isCalculationCompleted.value &&
+                _humanWins.value == 0 &&
+                _computerWins.value == 0 &&
+                _computerTurns.value == 3 &&
+                _diceAnimationKey.value == 0
+    }
+    fun resetGameData() {
+        _diceNoHuman.value = List(5) { 1 }
+        _diceNoComputer.value = List(5) { 1 }
+        _turns.value = 0
+        _humanScore.value = 0
+        _computerScore.value = 0
+        _humanSelectedDice.value = List(5) { 0 }
+        _showWonPopup.value = false
+        _showLosePopup.value = false
+        _showTiePopup.value = false
+        _isCalculationCompleted.value = true
+        _humanWins.value = 0
+        _computerWins.value = 0
+        _computerTurns.value = 3
+        _diceAnimationKey.value = 0
+    }
+
 }
 

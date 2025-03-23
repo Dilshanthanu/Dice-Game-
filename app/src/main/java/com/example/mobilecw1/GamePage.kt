@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -50,22 +52,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.*
+
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import com.airbnb.lottie.compose.*
+import androidx.compose.ui.text.style.TextOverflow
 
 
 @Composable
@@ -80,7 +77,7 @@ fun GamePage(
         val isLandscape = maxWidth > maxHeight
         if (isLandscape) {
             Row(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5)).padding(16.dp),
+                modifier = Modifier.fillMaxSize().background(Color(0xFF101820)).padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -92,84 +89,90 @@ fun GamePage(
                 )
                 {
                     DiceSection(viewModel, Modifier.weight(1.5f))
-                    ButtonSection(viewModel, Modifier.weight(1f))
+                    ButtonSection(viewModel, Modifier.weight(1f), isLandscape)
                 }
 
             }
         } else {
             Column(
-                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5)).padding(16.dp),
+                modifier = Modifier.fillMaxSize().background(Color(0xFF101820)).padding(16.dp),
                 verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 ScoreCard(viewModel, Modifier.fillMaxWidth())
                 DiceSection(viewModel, Modifier.fillMaxWidth())
-                ButtonSection(viewModel, Modifier.fillMaxWidth())
+                ButtonSection(viewModel, Modifier.fillMaxWidth(), isLandscape)
             }
         }
-    }
-    if (viewModel.showWonPopup){
-        ResultPopup(
-            title = "Congratulations!",
-            message = "You won the game! 🎉",
-            buttonColor = Color(0xFFFFA000),
-            secondaryButtonColor = Color(0xFFFFA000),
-            secondaryButtonVisible = true,
-            lottieFile = R.raw.success_animation2,
-            secondaryLottieFile = R.raw.fireworks,
-            onDismiss = { viewModel.ShowPopupDismiss() },
-            viewModel,
-            navController,
-            primaryButtonOnClick =  {viewModel.ResetGame()},
-            primaryButtonText = "PLAY AGAIN"
-        )
-    }
-    if (viewModel.showLosePopup){
-        ResultPopup(
-            title = "You Lost!",
-            message = "Better luck next time! 😞",
-            buttonColor = Color(0xFFD32F2F),
-            secondaryButtonColor = Color(0xFFD32F2F),
-            secondaryButtonVisible = true,
-            lottieFile = R.raw.lost_animation,
-            secondaryLottieFile = null,
-            onDismiss = {viewModel.ShowPopupDismiss() },
-            viewModel,
-            navController,
-            primaryButtonOnClick =  {viewModel.ResetGame()},
-            primaryButtonText = "PLAY AGAIN"
+        when {
+        viewModel.showWonPopup -> {
+            ResultPopup(
+                title = "Congratulations!",
+                message = "You won the game! 🎉",
+                buttonColor = Color(0xFFFFA000),
+                secondaryButtonColor = Color(0xFFFFA000),
+                secondaryButtonVisible = true,
+                lottieFile = R.raw.success_animation2,
+                secondaryLottieFile = R.raw.fireworks,
+                onDismiss = { viewModel.ShowPopupDismiss() },
+                viewModel = viewModel,
+                navController = navController,
+                primaryButtonOnClick = { viewModel.ResetGame() },
+                primaryButtonText = "PLAY AGAIN",
+                isLandscape = isLandscape
+            )
+        }
 
-        )
-    }
-    if (viewModel.showTiePopup){
-        Toast.makeText(LocalContext.current, "The game is a tie!", Toast.LENGTH_SHORT).show()
-        ResultPopup(
-            title = "Game Tie!",
-            message = "It's a draw! You have another chance to win.",
-            buttonColor = Color(0xff29b6f6),
-            secondaryButtonColor = Color(0xff29b6f6),
-            secondaryButtonVisible = false,
-            lottieFile = R.drawable.equal_image,
-            secondaryLottieFile = null,
-            onDismiss = {viewModel.ShowPopupDismiss() },
-            viewModel,
-            navController,
-            primaryButtonOnClick = {},
-            primaryButtonText = "CONTINUE"
+        viewModel.showLosePopup -> {
+            ResultPopup(
+                title = "You Lost!",
+                message = "Better luck next time! 😞",
+                buttonColor = Color(0xFFD32F2F),
+                secondaryButtonColor = Color(0xFFD32F2F),
+                secondaryButtonVisible = true,
+                lottieFile = R.raw.lost_animation,
+                secondaryLottieFile = null,
+                onDismiss = { viewModel.ShowPopupDismiss() },
+                viewModel = viewModel,
+                navController = navController,
+                primaryButtonOnClick = { viewModel.ResetGame() },
+                primaryButtonText = "PLAY AGAIN",
+                isLandscape = isLandscape
+            )
+        }
 
-        )
-    }
-    if (showDialog) {
-        TargetScore(
-            onDismiss = { showDialog = false },
-            onConfirm = { targetScore ->
-                viewModel.updateTargetScore(targetScore)
-                showDialog = false
-            },
-            viewModel = viewModel
-        )
+        viewModel.showTiePopup -> {
+            Toast.makeText(LocalContext.current, "The game is a tie!", Toast.LENGTH_SHORT).show()
+            ResultPopup(
+                title = "Game Tie!",
+                message = "It's a draw! You have another chance to win.",
+                buttonColor = Color(0xff29b6f6),
+                secondaryButtonColor = Color(0xff29b6f6),
+                secondaryButtonVisible = false,
+                lottieFile = R.drawable.equal_image,
+                secondaryLottieFile = null,
+                onDismiss = { viewModel.ShowPopupDismiss() },
+                viewModel = viewModel,
+                navController = navController,
+                primaryButtonOnClick = {},
+                primaryButtonText = "CONTINUE",
+                isLandscape = isLandscape
+            )
+        }
     }
 
+        if (showDialog) {
+            TargetScore(
+                onDismiss = { showDialog = false },
+                onConfirm = { targetScore ->
+                    viewModel.updateTargetScore(targetScore)
+                    showDialog = false
+                },
+                viewModel = viewModel,
+                isLandscape = isLandscape
+            )
+        }
+    }
 
 }
 @Composable
@@ -281,16 +284,14 @@ fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Human Dice Section
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "🎲 Human", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
             HumanList(viewModel.diceNoHuman, viewModel)
         }
 
-        Spacer(modifier = Modifier.height(16.dp)) // Space between sections
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Computer Dice Section
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(text = "🤖 Computer", fontSize = 18.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
@@ -299,9 +300,9 @@ fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
     }
 }
 @Composable
-fun ButtonSection(viewModel: GameViewModal, modifier: Modifier) {
+fun ButtonSection(viewModel: GameViewModal, modifier: Modifier ,isLandscape: Boolean) {
     val turns by remember { derivedStateOf { viewModel.turns } }
-
+if (isLandscape){
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -322,7 +323,7 @@ fun ButtonSection(viewModel: GameViewModal, modifier: Modifier) {
                     modifier = Modifier
                         .padding(8.dp)
                         .height(50.dp)
-                        .weight(1f), // Distribute width evenly
+                        .weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     enabled = turns == 0 || viewModel.isCalculationCompleted,
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
@@ -362,12 +363,62 @@ fun ButtonSection(viewModel: GameViewModal, modifier: Modifier) {
             }
         }
     }
+}else{
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Button(
+            onClick = { viewModel.TrowOnclickaction() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            enabled = turns == 0 || viewModel.isCalculationCompleted,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+        ) {
+            Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Button(
+            onClick = { viewModel.RerollOnclick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            enabled = turns != 0,
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+        ) {
+            Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+
+        Button(
+            onClick = {
+                if (!viewModel.isCalculationCompleted) {
+                    viewModel.CalculateScoreHumen()
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+            enabled = !viewModel.isCalculationCompleted
+        ) {
+            Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
 }
 
 
 @Composable
 fun HumanList(diceNo: List<Int>, viewModel: GameViewModal) {
-    Row( // Changed to Row for horizontal alignment
+    Row(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -387,7 +438,7 @@ fun HumanDiceGen(diceNo: Int, index: Int, viewModel: GameViewModal) {
         shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(0.dp),
         modifier = Modifier
-            .background(if (isSelected) Color.LightGray else Color.Transparent)
+            .background(if (isSelected) Color.LightGray else Color.Transparent , shape = RoundedCornerShape(20.dp))
             .padding(all = 0.dp),
     ) {
         Image(
@@ -395,10 +446,10 @@ fun HumanDiceGen(diceNo: Int, index: Int, viewModel: GameViewModal) {
             contentDescription = "Dice with number $diceNo",
             modifier = Modifier
                 .size(60.dp)
-                .shadow(if (isSelected) 8.dp else 4.dp, shape = RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(20.dp))
+                .background(Color(0xFFFFFFFF), shape = RoundedCornerShape(20.dp))
         )
     }
-
 }
 
 @Composable
@@ -419,9 +470,11 @@ fun ComputerDiceGen(diceNo: Int) {
         contentDescription = "Dice with number $diceNo",
         modifier = Modifier
             .size(60.dp)
-            .shadow(4.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFFFFFFFF), shape = RoundedCornerShape(20.dp))
     )
 }
+
 
 fun DiceGenerator(diceNo: Int): Int {
     return when (diceNo) {
@@ -449,7 +502,8 @@ fun ResultPopup(
     viewModel: GameViewModal,
     navController: NavController,
     primaryButtonOnClick: () -> Unit,
-    primaryButtonText: String
+    primaryButtonText: String,
+    isLandscape: Boolean
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -459,127 +513,244 @@ fun ResultPopup(
                 .background(Color.White, RoundedCornerShape(16.dp))
                 .shadow(10.dp, RoundedCornerShape(16.dp))
                 .border(1.dp, buttonColor.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                .widthIn(min = 1000.dp, max = 1500.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(24.dp)
-            ) {
-                // Lottie Animation
-                Box(
-                    modifier = Modifier
-                        .height(200.dp) // Ensures proper spacing
-                        .fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.padding(24.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    secondaryLottieFile?.let {
-                        val secondaryComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(it))
-                        val secondaryProgress by animateLottieCompositionAsState(
-                            secondaryComposition,
+                    Box(
+                        modifier = Modifier
+                            .size(300.dp)
+                            .weight(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        secondaryLottieFile?.let {
+                            val secondaryComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(it))
+                            val secondaryProgress by animateLottieCompositionAsState(
+                                secondaryComposition,
+                                iterations = LottieConstants.IterateForever
+                            )
+
+                            LottieAnimation(
+                                composition = secondaryComposition,
+                                progress = secondaryProgress,
+                                modifier = Modifier.size(220.dp)
+                            )
+                        }
+
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieFile))
+                        val progress by animateLottieCompositionAsState(
+                            composition,
                             iterations = LottieConstants.IterateForever
                         )
 
                         LottieAnimation(
-                            composition = secondaryComposition,
-                            progress = secondaryProgress,
-                            modifier = Modifier
-                                .fillMaxWidth(1f) // Increased width
-                                .height(200.dp) // Increased height
-                                .align(Alignment.BottomCenter)
+                            composition = composition,
+                            progress = progress,
+                            modifier = Modifier.size(200.dp)
                         )
                     }
 
-
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieFile))
-                    val progress by animateLottieCompositionAsState(
-                        composition,
-                        iterations = LottieConstants.IterateForever
-                    )
-
-                    LottieAnimation(
-                        composition = composition,
-                        progress = progress,
-                        modifier = Modifier.size(100.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = title,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = message,
-                    fontSize = 16.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Button(
-                        onClick = {
-                            primaryButtonOnClick()
-                            onDismiss()
-                        },
-                        colors = ButtonDefaults.buttonColors(buttonColor),
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .shadow(8.dp, RoundedCornerShape(16.dp))
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(Color(0xFF42A5F5), Color(0xFF1976D2))
-                                ),
-                                shape = RoundedCornerShape(16.dp)
-                            ),
-                        shape = RoundedCornerShape(16.dp)
+                            .weight(2f)
+                            .padding(horizontal = 16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            primaryButtonText,
-                            fontSize = 16.sp,
+                            text = title,
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.Black,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = message,
+                            fontSize = 16.sp,
+                            color = Color.Gray,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Button(
+                                onClick = {
+                                    primaryButtonOnClick()
+                                    onDismiss()
+                                },
+                                colors = ButtonDefaults.buttonColors(buttonColor),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .shadow(8.dp, RoundedCornerShape(16.dp)),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text(
+                                    text = primaryButtonText,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+
+                            if (secondaryButtonVisible) {
+                                Button(
+                                    onClick = {
+                                        onDismiss()
+                                        navController.navigate(Routes.LandingPage)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(secondaryButtonColor),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(48.dp)
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .shadow(8.dp, RoundedCornerShape(16.dp)),
+                                    shape = RoundedCornerShape(16.dp)
+                                ) {
+                                    Text(
+                                        text = "BACK TO HOME",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White,
+                                        textAlign = TextAlign.Center,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .height(200.dp) // Ensures proper spacing
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        secondaryLottieFile?.let {
+                            val secondaryComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(it))
+                            val secondaryProgress by animateLottieCompositionAsState(
+                                secondaryComposition,
+                                iterations = LottieConstants.IterateForever
+                            )
+
+                            LottieAnimation(
+                                composition = secondaryComposition,
+                                progress = secondaryProgress,
+                                modifier = Modifier
+                                    .fillMaxWidth(1f) // Increased width
+                                    .height(200.dp) // Increased height
+                                    .align(Alignment.BottomCenter)
+                            )
+                        }
+
+
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieFile))
+                        val progress by animateLottieCompositionAsState(
+                            composition,
+                            iterations = LottieConstants.IterateForever
+                        )
+
+                        LottieAnimation(
+                            composition = composition,
+                            progress = progress,
+                            modifier = Modifier.size(100.dp)
                         )
                     }
-                    if (secondaryButtonVisible) {
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = title,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = message,
+                        fontSize = 16.sp,
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
                         Button(
                             onClick = {
+                                primaryButtonOnClick()
                                 onDismiss()
-                                navController.navigate(Routes.LandingPage)
                             },
-                            colors = ButtonDefaults.buttonColors(secondaryButtonColor),
+                            colors = ButtonDefaults.buttonColors(buttonColor),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp)
                                 .clip(RoundedCornerShape(16.dp))
-                                .shadow(8.dp, RoundedCornerShape(16.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        colors = listOf(Color(0xFFFFA726), Color(0xFFF57C00))
-                                    ),
-                                    shape = RoundedCornerShape(16.dp)
-                                ),
+                                .shadow(8.dp, RoundedCornerShape(16.dp)),
                             shape = RoundedCornerShape(16.dp)
                         ) {
                             Text(
-                                "BACK TO HOME",
+                                text = primaryButtonText,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.White,
+                                textAlign = TextAlign.Center,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
+                        }
+
+                        if (secondaryButtonVisible) {
+                            Button(
+                                onClick = {
+                                    onDismiss()
+                                    navController.navigate(Routes.LandingPage)
+                                },
+                                colors = ButtonDefaults.buttonColors(secondaryButtonColor),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .shadow(8.dp, RoundedCornerShape(16.dp)),
+                                shape = RoundedCornerShape(16.dp)
+                            ) {
+                                Text(
+                                    text = "BACK TO HOME",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }
@@ -587,100 +758,174 @@ fun ResultPopup(
         }
     }
 }
+
 
 
 @Composable
 fun TargetScore(
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit,
-    viewModel: GameViewModal // Fixed typo in ViewModel name
+    viewModel: GameViewModal,
+    isLandscape: Boolean
 ) {
     var inputText by remember { mutableStateOf(viewModel.targetScore.toString()) } // Use String for input field
 
-    Dialog(onDismissRequest = onDismiss) {
+    Dialog(
+        onDismissRequest = onDismiss,
+
+    ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
                 .background(Color.White, shape = RoundedCornerShape(12.dp))
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(16.dp)
-            ) {
-
-                Box(
-                    modifier = Modifier
-                        .size(100.dp)
-                        .background(Color(0xFF42A5F5).copy(alpha = 0.2f), shape = CircleShape),
-                    contentAlignment = Alignment.Center
+            if (isLandscape) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.target_image),
-                        contentDescription = "Target Icon",
-                        modifier = Modifier.size(80.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                OutlinedTextField(
-                    value = inputText,
-                    onValueChange = { newValue ->
-                        if (newValue.all { char -> char.isDigit() }) {
-                            inputText = newValue
-                            viewModel.updateTargetScore(newValue.toIntOrNull() ?: 0)
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .background(Color(0xFF42A5F5).copy(alpha = 0.2f), shape = CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.target_image),
+                                contentDescription = "Target Icon",
+                                modifier = Modifier.size(80.dp)
+                            )
                         }
-                    },
-                    label = { Text("Enter Target Score") },
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
 
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    }
 
-                Button(
-                    onClick = { onConfirm(viewModel.targetScore) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFFFA726), Color(0xFFF57C00))
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        ),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = inputText.isNotEmpty()
-                ) {
-                    Text("Set Target")
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+
+                        OutlinedTextField(
+                            value = inputText,
+                            onValueChange = { newValue ->
+                                if (newValue.all { char -> char.isDigit() }) {
+                                    inputText = newValue
+                                    viewModel.updateTargetScore(newValue.toIntOrNull() ?: 0)
+                                }
+                            },
+                            label = { Text("Enter Target Score") },
+                            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = { onConfirm(viewModel.targetScore) },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .shadow(8.dp, RoundedCornerShape(16.dp)),
+                            shape = RoundedCornerShape(16.dp),
+                            enabled = inputText.isNotEmpty()
+                        ) {
+                            Text("Set Target")
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xff8d6e63)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(48.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                                .shadow(8.dp, RoundedCornerShape(16.dp)),
+                            shape = RoundedCornerShape(16.dp),
+                            enabled = inputText.isNotEmpty()
+                        ) {
+                            Text("Cancel")
+                        }
+                    }
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onDismiss,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xff8d6e63)),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(Color(0xFFFFA726), Color(0xFFF57C00))
-                            ),
-                            shape = RoundedCornerShape(16.dp)
-                        ),
-                    shape = RoundedCornerShape(16.dp),
-                    enabled = inputText.isNotEmpty()
+            } else {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    Text("Cancel")
+                    Box(
+                        modifier = Modifier
+                            .size(100.dp)
+                            .background(Color(0xFF42A5F5).copy(alpha = 0.2f), shape = CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.target_image),
+                            contentDescription = "Target Icon",
+                            modifier = Modifier.size(80.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = inputText,
+                        onValueChange = { newValue ->
+                            if (newValue.all { char -> char.isDigit() }) {
+                                inputText = newValue
+                                viewModel.updateTargetScore(newValue.toIntOrNull() ?: 0)
+                            }
+                        },
+                        label = { Text("Enter Target Score") },
+                        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { onConfirm(viewModel.targetScore) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF42A5F5)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .shadow(8.dp, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = inputText.isNotEmpty()
+                    ) {
+                        Text("Set Target")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = onDismiss,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xff8d6e63)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .shadow(8.dp, RoundedCornerShape(16.dp)),
+                        shape = RoundedCornerShape(16.dp),
+                        enabled = inputText.isNotEmpty()
+                    ) {
+                        Text("Cancel")
+                    }
                 }
             }
         }
     }
 }
+

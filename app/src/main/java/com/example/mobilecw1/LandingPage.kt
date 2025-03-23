@@ -37,12 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
-fun LandingPage(navController: NavController) {
+fun LandingPage(navController: NavController , viewModal: GameViewModal) {
     var showAboutPopup by remember { mutableStateOf(false) }
 
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.dice))
@@ -89,7 +87,10 @@ fun LandingPage(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Button(
-                        onClick = { navController.navigate(Routes.NewGame) },
+                        onClick = {
+                            navController.navigate(Routes.NewGame)
+                            viewModal.resetGameData()
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier
@@ -103,23 +104,45 @@ fun LandingPage(navController: NavController) {
                             color = Color.White
                         )
                     }
+                    if (!viewModal.isGameDataReset()) {
 
-                    Button(
-                        onClick = { showAboutPopup = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth(0.5f)
-                            .height(50.dp)
-                    ) {
-                        Text(
-                            text = "ABOUT",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
+                        Button(
+                            onClick = {
+                                navController.navigate(Routes.NewGame)
+
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .height(50.dp)
+                        ) {
+                            Text(
+                                text = "CONTINUE",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                     }
-                }
+
+                        Button(
+                            onClick = { showAboutPopup = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth(0.5f)
+                                .height(50.dp)
+                        ) {
+                            Text(
+                                text = "ABOUT",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
             }
         } else {
             Column(
@@ -137,42 +160,115 @@ fun LandingPage(navController: NavController) {
                         .padding(bottom = 16.dp)
                 )
 
-                Button(
-                    onClick = { navController.navigate(Routes.NewGame) },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(50.dp)
-                ) {
-                    Text(
-                        text = "NEW GAME",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+                if (!viewModal.isGameDataReset()) {
+                    // Row for New Game and Continue buttons when Continue is visible
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                navController.navigate(Routes.NewGame)
+                                viewModal.resetGameData()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "NEW GAME",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = {
+                                navController.navigate(Routes.NewGame)
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = "CONTINUE",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
 
-                Button(
-                    onClick = { showAboutPopup = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth(0.6f)
-                        .height(50.dp)
-                ) {
-                    Text(
-                        text = "ABOUT",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = { showAboutPopup = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.6f)
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = "ABOUT",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        Button(
+                            onClick = {
+                                navController.navigate(Routes.NewGame)
+                                viewModal.resetGameData()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .padding(end = 8.dp)
+                        ) {
+                            Text(
+                                text = "NEW GAME",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+
+                        Button(
+                            onClick = { showAboutPopup = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(50.dp)
+                                .padding(start = 8.dp)
+                        ) {
+                            Text(
+                                text = "ABOUT",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
         }
-    }
+        }
 
     if (showAboutPopup) {
         AboutPopup(onDismiss = { showAboutPopup = false })
@@ -212,9 +308,19 @@ fun AboutPopup(onDismiss: () -> Unit) {
                 modifier = Modifier
                     .padding(8.dp)
                     .fillMaxWidth()
-                    .heightIn(min = 100.dp, max = 300.dp) // Adjust height dynamically
-                    .verticalScroll(rememberScrollState()) // Enables scrolling
+                    .heightIn(min = 100.dp, max = 300.dp)
             ) {
+                Text(
+                    text = "Name: T.G.Dilshan Thotapaldeniya",
+                    fontSize = 16.sp,
+                    color = Color(0xFF555555)
+                )
+                Text(
+                    text = "Student ID: w1987529",
+                    fontSize = 16.sp,
+                    color = Color(0xFF555555)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "I confirm that I understand what plagiarism is and have read and " +
                             "understood the section on Assessment Offences in the Essential " +

@@ -49,7 +49,7 @@ fun GameApp(viewModal: GameViewModal){
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination  = Routes.LandingPage , builder = {
         composable(Routes.LandingPage){
-            LandingPage(navController)
+            LandingPage(navController, viewModal)
         }
         composable(Routes.NewGame){
             GamePage(navController, viewModal)
