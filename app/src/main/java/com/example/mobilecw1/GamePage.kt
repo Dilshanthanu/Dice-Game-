@@ -6,8 +6,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,28 +19,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,108 +50,61 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieComposition
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.*
 
 
 @Composable
-fun GamePage(
-    navController: NavController) {
-    val viewModel = remember { GameViewModal() }
-    var showDialog by remember { mutableStateOf(true) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            elevation = CardDefaults.cardElevation(8.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
-        ) {
+fun GamePage(
+    navController: NavController,
+    viewModel: GameViewModal
+
+) {
+    var showDialog by rememberSaveable { mutableStateOf(true) }
+    BoxWithConstraints {
+        val isLandscape = maxWidth > maxHeight
+        if (isLandscape) {
+            Row(
+                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5)).padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ScoreCard(viewModel, Modifier.weight(1f))
+                Column (
+                    modifier = Modifier.weight(1.5f),
+                    verticalArrangement = Arrangement.SpaceBetween ,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                )
+                {
+                    DiceSection(viewModel, Modifier.weight(1.5f))
+                    ButtonSection(viewModel, Modifier.weight(1f))
+                }
+
+            }
+        } else {
             Column(
-                modifier = Modifier.padding(16.dp).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5)).padding(16.dp),
+                verticalArrangement = Arrangement.SpaceBetween,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Scores",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Text(
-                        text = "Human: ${viewModel.humanScore}",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1565C0)
-                    )
-                    Text(
-                        text = "Computer: ${viewModel.computerScore}",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFD32F2F)
-                    )
-                }
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Human", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                HumanList(viewModel.diceNoHuman , viewModel)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = "Computer", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.height(8.dp))
-                ComputerList(viewModel.diceNoComputer)
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            Button(
-                onClick = {
-                    viewModel.TrowOnclickaction()
-                          },
-                modifier = Modifier.padding(8.dp).height(50.dp),
-                enabled = viewModel.turns > 0,
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-            ) {
-                Text(text = "Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            }
-
-            Button(
-                onClick = {
-                    if (!viewModel.isCalculationCompleted) {
-                        viewModel.CalculateScore()
-                    }
-
-                },
-                modifier = Modifier.padding(8.dp).height(50.dp),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                enabled = !viewModel.isCalculationCompleted
-            ) {
-                Text(text = "Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                ScoreCard(viewModel, Modifier.fillMaxWidth())
+                DiceSection(viewModel, Modifier.fillMaxWidth())
+                ButtonSection(viewModel, Modifier.fillMaxWidth())
             }
         }
     }
@@ -159,7 +115,8 @@ fun GamePage(
             buttonColor = Color(0xFFFFA000),
             secondaryButtonColor = Color(0xFFFFA000),
             secondaryButtonVisible = true,
-            imageRes = R.drawable.win_image,
+            lottieFile = R.raw.success_animation2,
+            secondaryLottieFile = R.raw.fireworks,
             onDismiss = { viewModel.ShowPopupDismiss() },
             viewModel,
             navController,
@@ -174,7 +131,8 @@ fun GamePage(
             buttonColor = Color(0xFFD32F2F),
             secondaryButtonColor = Color(0xFFD32F2F),
             secondaryButtonVisible = true,
-            imageRes = R.drawable.lose_image,
+            lottieFile = R.raw.lost_animation,
+            secondaryLottieFile = null,
             onDismiss = {viewModel.ShowPopupDismiss() },
             viewModel,
             navController,
@@ -191,7 +149,8 @@ fun GamePage(
             buttonColor = Color(0xff29b6f6),
             secondaryButtonColor = Color(0xff29b6f6),
             secondaryButtonVisible = false,
-            imageRes = R.drawable.equal_image,
+            lottieFile = R.drawable.equal_image,
+            secondaryLottieFile = null,
             onDismiss = {viewModel.ShowPopupDismiss() },
             viewModel,
             navController,
@@ -213,19 +172,209 @@ fun GamePage(
 
 
 }
+@Composable
+
+fun ScoreCard(viewModel: GameViewModal, modifier: Modifier) {
+
+    Card(
+
+        modifier = modifier
+
+            .padding(8.dp)
+
+            .shadow(10.dp, RoundedCornerShape(16.dp)),
+
+        elevation = CardDefaults.cardElevation(8.dp),
+
+        shape = RoundedCornerShape(16.dp),
+
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+
+    ) {
+
+        Column(
+
+            modifier = Modifier.padding(20.dp).fillMaxWidth(),
+
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+
+            horizontalAlignment = Alignment.CenterHorizontally
+
+        ) {
+
+            Text(
+
+                text = "Scoreboard",
+
+                fontSize = 24.sp,
+
+                fontWeight = FontWeight.Bold,
+
+                color = Color(0xFF1976D2),
+
+                textAlign = TextAlign.Center
+
+            )
+
+            Row(
+
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+
+                horizontalArrangement = Arrangement.SpaceBetween
+
+            ) {
+
+                ScoreItem("Human", viewModel.humanScore, Color(0xFF4CAF50))
+
+                ScoreItem("Computer", viewModel.computerScore, Color(0xFFD32F2F))
+
+            }
+
+            Divider(color = Color.LightGray, thickness = 1.dp)
+
+            Row(
+
+                modifier = Modifier.fillMaxWidth().padding(12.dp),
+
+                horizontalArrangement = Arrangement.SpaceBetween
+
+            ) {
+
+                ScoreItem("Wins 🏆", viewModel.humanWins, Color(0xFF2E7D32))
+
+                ScoreItem("Losses 😢", viewModel.computerWins, Color(0xFFC62828))
+
+            }
+
+        }
+
+    }
+
+}
+
+@Composable
+
+fun ScoreItem(label: String, score: Int, color: Color) {
+
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+
+        Text(text = label, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+
+        Text(
+
+            text = score.toString(),
+
+            fontSize = 24.sp,
+
+            fontWeight = FontWeight.ExtraBold,
+
+            color = color
+
+        )
+
+    }
+
+}
+@Composable
+fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Human Dice Section
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "🎲 Human", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            HumanList(viewModel.diceNoHuman, viewModel)
+        }
+
+        Spacer(modifier = Modifier.height(16.dp)) // Space between sections
+
+        // Computer Dice Section
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "🤖 Computer", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(8.dp))
+            ComputerList(viewModel.diceNoComputer)
+        }
+    }
+}
+@Composable
+fun ButtonSection(viewModel: GameViewModal, modifier: Modifier) {
+    val turns by remember { derivedStateOf { viewModel.turns } }
+
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                Button(
+                    onClick = { viewModel.TrowOnclickaction() },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .height(50.dp)
+                        .weight(1f), // Distribute width evenly
+                    shape = RoundedCornerShape(12.dp),
+                    enabled = turns == 0 || viewModel.isCalculationCompleted,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = { viewModel.RerollOnclick() },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .height(50.dp)
+                        .weight(1f),
+                    enabled = turns != 0,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                ) {
+                    Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+
+                Button(
+                    onClick = {
+                        if (!viewModel.isCalculationCompleted) {
+                            viewModel.CalculateScoreHumen()
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .height(50.dp)
+                        .weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                    enabled = !viewModel.isCalculationCompleted
+                ) {
+                    Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
 
 
 @Composable
 fun HumanList(diceNo: List<Int>, viewModel: GameViewModal) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Row( // Changed to Row for horizontal alignment
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         diceNo.forEachIndexed { index, value ->
             HumanDiceGen(value, index, viewModel)
         }
     }
-
 }
 @Composable
 fun HumanDiceGen(diceNo: Int, index: Int, viewModel: GameViewModal) {
@@ -254,9 +403,9 @@ fun HumanDiceGen(diceNo: Int, index: Int, viewModel: GameViewModal) {
 
 @Composable
 fun ComputerList(diceNo: List<Int>) {
-    Column (
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         diceNo.forEach { ComputerDiceGen(it) }
     }
@@ -286,6 +435,7 @@ fun DiceGenerator(diceNo: Int): Int {
     }
 }
 
+
 @Composable
 fun ResultPopup(
     title: String,
@@ -293,7 +443,8 @@ fun ResultPopup(
     buttonColor: Color,
     secondaryButtonColor: Color,
     secondaryButtonVisible: Boolean,
-    imageRes: Int,
+    lottieFile: Int,
+    secondaryLottieFile: Int? = null,
     onDismiss: () -> Unit,
     viewModel: GameViewModal,
     navController: NavController,
@@ -313,19 +464,43 @@ fun ResultPopup(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(24.dp)
             ) {
+                // Lottie Animation
                 Box(
                     modifier = Modifier
-                        .size(100.dp)
-                        .background(buttonColor.copy(alpha = 0.2f), shape = CircleShape),
+                        .height(200.dp) // Ensures proper spacing
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = imageRes),
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp)
+                    secondaryLottieFile?.let {
+                        val secondaryComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(it))
+                        val secondaryProgress by animateLottieCompositionAsState(
+                            secondaryComposition,
+                            iterations = LottieConstants.IterateForever
+                        )
+
+                        LottieAnimation(
+                            composition = secondaryComposition,
+                            progress = secondaryProgress,
+                            modifier = Modifier
+                                .fillMaxWidth(1f) // Increased width
+                                .height(200.dp) // Increased height
+                                .align(Alignment.BottomCenter)
+                        )
+                    }
+
+
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieFile))
+                    val progress by animateLottieCompositionAsState(
+                        composition,
+                        iterations = LottieConstants.IterateForever
+                    )
+
+                    LottieAnimation(
+                        composition = composition,
+                        progress = progress,
+                        modifier = Modifier.size(100.dp)
                     )
                 }
-
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
@@ -407,13 +582,12 @@ fun ResultPopup(
                             )
                         }
                     }
-
-
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun TargetScore(
@@ -484,6 +658,27 @@ fun TargetScore(
                     enabled = inputText.isNotEmpty()
                 ) {
                     Text("Set Target")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = onDismiss,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xff8d6e63)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .shadow(8.dp, RoundedCornerShape(16.dp))
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(Color(0xFFFFA726), Color(0xFFF57C00))
+                            ),
+                            shape = RoundedCornerShape(16.dp)
+                        ),
+                    shape = RoundedCornerShape(16.dp),
+                    enabled = inputText.isNotEmpty()
+                ) {
+                    Text("Cancel")
                 }
             }
         }

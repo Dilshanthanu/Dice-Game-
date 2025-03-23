@@ -61,4 +61,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$nav_version")
     val lifecycle_version = "2.8.7"
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version")
+    implementation("com.airbnb.android:lottie-compose:6.1.0")
 }

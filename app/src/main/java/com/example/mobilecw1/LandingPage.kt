@@ -1,5 +1,7 @@
 package com.example.mobilecw1
 
+import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,76 +26,161 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
+import com.airbnb.lottie.compose.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun LandingPage(navController: NavController) {
     var showAboutPopup by remember { mutableStateOf(false) }
+
+    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.dice))
+    val progress by animateLottieCompositionAsState(
+        composition,
+        iterations = LottieConstants.IterateForever
+    )
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .paint(
-                painter = painterResource(id = R.drawable.landingpagebg),
-                contentScale = ContentScale.FillBounds
-            )
+            .background(Color(0xFF101820))
     ) {
-        Column(
+        LottieAnimation(
+            composition = composition,
+            progress = { progress },
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(
-                onClick = {
-                    navController.navigate(Routes.NewGame)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                shape = RoundedCornerShape(16.dp),
+                .align(Alignment.Center),
+            contentScale = ContentScale.Crop
+        )
+
+        if (isLandscape) {
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(50.dp)
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Text(
-                    text = "NEW GAME",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                Image(
+                    painter = painterResource(id = R.drawable.logo2),
+                    contentDescription = "Game Logo",
+                    modifier = Modifier
+                        .size(250.dp)
+                        .padding(end = 16.dp)
                 )
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = { navController.navigate(Routes.NewGame) },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = "NEW GAME",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+
+                    Button(
+                        onClick = { showAboutPopup = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(50.dp)
+                    ) {
+                        Text(
+                            text = "ABOUT",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = { showAboutPopup = true },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                shape = RoundedCornerShape(16.dp),
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .height(50.dp)
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "ABOUT",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
+                Image(
+                    painter = painterResource(id = R.drawable.logo2),
+                    contentDescription = "Game Logo",
+                    modifier = Modifier
+                        .size(500.dp)
+                        .padding(bottom = 16.dp)
                 )
+
+                Button(
+                    onClick = { navController.navigate(Routes.NewGame) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "NEW GAME",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = { showAboutPopup = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(50.dp)
+                ) {
+                    Text(
+                        text = "ABOUT",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
-    if (showAboutPopup){
+
+    if (showAboutPopup) {
         AboutPopup(onDismiss = { showAboutPopup = false })
     }
 }
+
+
+
 
 @Composable
 fun AboutPopup(onDismiss: () -> Unit) {
@@ -121,7 +208,13 @@ fun AboutPopup(onDismiss: () -> Unit) {
             }
         },
         text = {
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .fillMaxWidth()
+                    .heightIn(min = 100.dp, max = 300.dp) // Adjust height dynamically
+                    .verticalScroll(rememberScrollState()) // Enables scrolling
+            ) {
                 Text(
                     text = "I confirm that I understand what plagiarism is and have read and " +
                             "understood the section on Assessment Offences in the Essential " +
@@ -161,3 +254,4 @@ fun AboutPopup(onDismiss: () -> Unit) {
             .padding(16.dp)
     )
 }
+

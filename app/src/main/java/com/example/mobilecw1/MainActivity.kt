@@ -10,12 +10,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.mobilecw1.ui.theme.MobileCW1Theme
 
 class MainActivity : ComponentActivity() {
+    val viewModel by lazy {
+        ViewModelProvider(this).get(GameViewModal::class.java)
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -25,7 +29,6 @@ class MainActivity : ComponentActivity() {
 
             MobileCW1Theme {
                 Scaffold(
-
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     Column(
@@ -33,7 +36,7 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        GameApp()
+                        GameApp(viewModel)
                     }
                 }
             }
@@ -42,14 +45,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GameApp(){
+fun GameApp(viewModal: GameViewModal){
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination  = Routes.LandingPage , builder = {
         composable(Routes.LandingPage){
             LandingPage(navController)
         }
         composable(Routes.NewGame){
-            GamePage(navController)
+            GamePage(navController, viewModal)
         }
 
     })
