@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,26 +57,25 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
-
 import androidx.compose.foundation.shape.RoundedCornerShape
-
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
-
+import androidx.compose.ui.unit.Dp
 
 @Composable
-
 fun GamePage(
     navController: NavController,
     viewModel: GameViewModal
-
 ) {
-    var showDialog by rememberSaveable { mutableStateOf(true) }
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(Color.Black, Color(0xFF1C1C1C), Color(0xFF101820))
+    )
     BoxWithConstraints {
         val isLandscape = maxWidth > maxHeight
         if (isLandscape) {
             Row(
-                modifier = Modifier.fillMaxSize().background(Color(0xFF101820)).padding(8.dp),
+                modifier = Modifier.fillMaxSize().background(gradientBrush).padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -109,8 +107,8 @@ fun GamePage(
             ResultPopup(
                 title = "Congratulations!",
                 message = "You won the game! 🎉",
-                buttonColor = Color(0xFFFFA000),
-                secondaryButtonColor = Color(0xFFFFA000),
+                buttonColor = Color(0xff7cb342),
+                secondaryButtonColor = Color(0xff7cb342),
                 secondaryButtonVisible = true,
                 lottieFile = R.raw.success_animation2,
                 secondaryLottieFile = R.raw.fireworks,
@@ -130,14 +128,16 @@ fun GamePage(
                 buttonColor = Color(0xFFD32F2F),
                 secondaryButtonColor = Color(0xFFD32F2F),
                 secondaryButtonVisible = true,
-                lottieFile = R.raw.lost_animation,
+                lottieFile = R.raw.faill,
                 secondaryLottieFile = null,
                 onDismiss = { viewModel.ShowPopupDismiss() },
                 viewModel = viewModel,
                 navController = navController,
                 primaryButtonOnClick = { viewModel.ResetGame() },
                 primaryButtonText = "PLAY AGAIN",
-                isLandscape = isLandscape
+                isLandscape = isLandscape,
+                animationWidth = 300.dp
+
             )
         }
 
@@ -149,24 +149,25 @@ fun GamePage(
                 buttonColor = Color(0xff29b6f6),
                 secondaryButtonColor = Color(0xff29b6f6),
                 secondaryButtonVisible = false,
-                lottieFile = R.drawable.equal_image,
+                lottieFile = R.raw.computer_and_human,
                 secondaryLottieFile = null,
                 onDismiss = { viewModel.ShowPopupDismiss() },
                 viewModel = viewModel,
                 navController = navController,
                 primaryButtonOnClick = {},
                 primaryButtonText = "CONTINUE",
-                isLandscape = isLandscape
+                isLandscape = isLandscape,
+                animationWidth = 300.dp
             )
         }
     }
 
-        if (showDialog) {
+        if (viewModel.showTargetPopup) {
             TargetScore(
-                onDismiss = { showDialog = false },
+                onDismiss = { viewModel.targetOnDismiss() },
                 onConfirm = { targetScore ->
                     viewModel.updateTargetScore(targetScore)
-                    showDialog = false
+                    viewModel.targetOnDismiss()
                 },
                 viewModel = viewModel,
                 isLandscape = isLandscape
@@ -176,108 +177,60 @@ fun GamePage(
 
 }
 @Composable
-
 fun ScoreCard(viewModel: GameViewModal, modifier: Modifier) {
-
     Card(
-
         modifier = modifier
-
             .padding(8.dp)
-
             .shadow(10.dp, RoundedCornerShape(16.dp)),
-
         elevation = CardDefaults.cardElevation(8.dp),
-
         shape = RoundedCornerShape(16.dp),
-
         colors = CardDefaults.cardColors(containerColor = Color.White)
-
     ) {
-
         Column(
-
             modifier = Modifier.padding(20.dp).fillMaxWidth(),
-
             verticalArrangement = Arrangement.spacedBy(8.dp),
-
             horizontalAlignment = Alignment.CenterHorizontally
-
         ) {
-
             Text(
-
                 text = "Scoreboard",
-
                 fontSize = 24.sp,
-
                 fontWeight = FontWeight.Bold,
-
                 color = Color(0xFF1976D2),
-
                 textAlign = TextAlign.Center
-
             )
-
             Row(
-
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
-
                 horizontalArrangement = Arrangement.SpaceBetween
-
             ) {
-
                 ScoreItem("Human", viewModel.humanScore, Color(0xFF4CAF50))
-
                 ScoreItem("Computer", viewModel.computerScore, Color(0xFFD32F2F))
-
             }
-
             Divider(color = Color.LightGray, thickness = 1.dp)
-
             Row(
-
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
-
                 horizontalArrangement = Arrangement.SpaceBetween
-
             ) {
-
                 ScoreItem("Wins 🏆", viewModel.humanWins, Color(0xFF2E7D32))
-
                 ScoreItem("Losses 😢", viewModel.computerWins, Color(0xFFC62828))
-
             }
-
         }
-
     }
-
 }
 
 @Composable
-
 fun ScoreItem(label: String, score: Int, color: Color) {
-
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-
         Text(text = label, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-
         Text(
-
             text = score.toString(),
-
             fontSize = 24.sp,
-
             fontWeight = FontWeight.ExtraBold,
-
             color = color
-
         )
-
     }
-
 }
+
+
 @Composable
 fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
     Column(
@@ -285,7 +238,7 @@ fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "🎲 Human", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = "🎲 Human", fontSize = 18.sp, fontWeight = FontWeight.Bold,  color = Color.White)
             Spacer(modifier = Modifier.height(8.dp))
             HumanList(viewModel.diceNoHuman, viewModel)
         }
@@ -293,126 +246,161 @@ fun DiceSection(viewModel: GameViewModal, modifier: Modifier) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "🤖 Computer", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(text = "🤖 Computer", fontSize = 18.sp, fontWeight = FontWeight.Bold , color = Color.White)
             Spacer(modifier = Modifier.height(8.dp))
             ComputerList(viewModel.diceNoComputer)
         }
     }
 }
 @Composable
-fun ButtonSection(viewModel: GameViewModal, modifier: Modifier ,isLandscape: Boolean) {
+fun ButtonSection(viewModel: GameViewModal, modifier: Modifier, isLandscape: Boolean) {
     val turns by remember { derivedStateOf { viewModel.turns } }
-if (isLandscape){
-    Column(
-        modifier = modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+
+    val enabledButtonColor = Color(0xFF4CAF50) // Green
+    val scoreButtonColor = Color(0xFFFF9800) // Orange
+    val disabledButtonColor = Color(0xFF424242) // Dark Gray (Same for all)
+    val disabledTextColor = Color(0xFFBDBDBD) // Light Gray
+
+    if (isLandscape) {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .padding(16.dp)
             ) {
-                Button(
-                    onClick = { viewModel.TrowOnclickaction() },
+                Row(
                     modifier = Modifier
-                        .padding(8.dp)
-                        .height(50.dp)
-                        .weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    enabled = turns == 0 || viewModel.isCalculationCompleted,
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
+                    Button(
+                        onClick = { viewModel.TrowOnclickaction() },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(50.dp)
+                            .weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = turns == 0 || viewModel.isCalculationCompleted,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = enabledButtonColor,
+                            disabledContainerColor = disabledButtonColor,
+                            contentColor = Color.White,
+                            disabledContentColor = disabledTextColor
+                        )
+                    ) {
+                        Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
 
-                Button(
-                    onClick = { viewModel.RerollOnclick() },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(50.dp)
-                        .weight(1f),
-                    enabled = turns != 0,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-                ) {
-                    Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                }
+                    Button(
+                        onClick = { viewModel.RerollOnclick() },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(50.dp)
+                            .weight(1f),
+                        enabled = turns != 0,
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = enabledButtonColor,
+                            disabledContainerColor = disabledButtonColor,
+                            contentColor = Color.White,
+                            disabledContentColor = disabledTextColor
+                        )
+                    ) {
+                        Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
 
-                Button(
-                    onClick = {
-                        if (!viewModel.isCalculationCompleted) {
-                            viewModel.CalculateScoreHumen()
-                        }
-                    },
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .height(50.dp)
-                        .weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-                    enabled = !viewModel.isCalculationCompleted
-                ) {
-                    Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    Button(
+                        onClick = {
+                            if (!viewModel.isCalculationCompleted) {
+                                viewModel.CalculateScoreHumen()
+                            }
+                        },
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .height(50.dp)
+                            .weight(1f),
+                        shape = RoundedCornerShape(12.dp),
+                        enabled = !viewModel.isCalculationCompleted,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = scoreButtonColor,
+                            disabledContainerColor = disabledButtonColor,
+                            contentColor = Color.White,
+                            disabledContentColor = disabledTextColor
+                        )
+                    ) {
+                        Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
+    } else {
+        Column(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Button(
+                onClick = { viewModel.TrowOnclickaction() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = turns == 0 || viewModel.isCalculationCompleted,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = enabledButtonColor,
+                    disabledContainerColor = disabledButtonColor,
+                    contentColor = Color.White,
+                    disabledContentColor = disabledTextColor
+                )
+            ) {
+                Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = { viewModel.RerollOnclick() },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                enabled = turns != 0,
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = enabledButtonColor,
+                    disabledContainerColor = disabledButtonColor,
+                    contentColor = Color.White,
+                    disabledContentColor = disabledTextColor
+                )
+            ) {
+                Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = {
+                    if (!viewModel.isCalculationCompleted) {
+                        viewModel.CalculateScoreHumen()
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                enabled = !viewModel.isCalculationCompleted,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = scoreButtonColor,
+                    disabledContainerColor = disabledButtonColor,
+                    contentColor = Color.White,
+                    disabledContentColor = disabledTextColor
+                )
+            ) {
+                Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            }
+        }
     }
-}else{
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Button(
-            onClick = { viewModel.TrowOnclickaction() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            enabled = turns == 0 || viewModel.isCalculationCompleted,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-        ) {
-            Text(text = "🎲 Throw", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-
-        Button(
-            onClick = { viewModel.RerollOnclick() },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            enabled = turns != 0,
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
-        ) {
-            Text(text = "🔃 Re-roll", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-
-        Button(
-            onClick = {
-                if (!viewModel.isCalculationCompleted) {
-                    viewModel.CalculateScoreHumen()
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
-            enabled = !viewModel.isCalculationCompleted
-        ) {
-            Text(text = "✅ Score", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
 }
 
 
@@ -503,7 +491,8 @@ fun ResultPopup(
     navController: NavController,
     primaryButtonOnClick: () -> Unit,
     primaryButtonText: String,
-    isLandscape: Boolean
+    isLandscape: Boolean,
+    animationWidth: Dp = 150.dp
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Box(
@@ -521,39 +510,6 @@ fun ResultPopup(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .size(300.dp)
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        secondaryLottieFile?.let {
-                            val secondaryComposition by rememberLottieComposition(LottieCompositionSpec.RawRes(it))
-                            val secondaryProgress by animateLottieCompositionAsState(
-                                secondaryComposition,
-                                iterations = LottieConstants.IterateForever
-                            )
-
-                            LottieAnimation(
-                                composition = secondaryComposition,
-                                progress = secondaryProgress,
-                                modifier = Modifier.size(220.dp)
-                            )
-                        }
-
-                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(lottieFile))
-                        val progress by animateLottieCompositionAsState(
-                            composition,
-                            iterations = LottieConstants.IterateForever
-                        )
-
-                        LottieAnimation(
-                            composition = composition,
-                            progress = progress,
-                            modifier = Modifier.size(200.dp)
-                        )
-                    }
-
                     Column(
                         modifier = Modifier
                             .weight(2f)
@@ -644,7 +600,7 @@ fun ResultPopup(
                 ) {
                     Box(
                         modifier = Modifier
-                            .height(200.dp) // Ensures proper spacing
+                            .height(200.dp)
                             .fillMaxWidth(),
                         contentAlignment = Alignment.Center
                     ) {
@@ -659,8 +615,8 @@ fun ResultPopup(
                                 composition = secondaryComposition,
                                 progress = secondaryProgress,
                                 modifier = Modifier
-                                    .fillMaxWidth(1f) // Increased width
-                                    .height(200.dp) // Increased height
+                                    .fillMaxWidth(1f)
+                                    .height(200.dp)
                                     .align(Alignment.BottomCenter)
                             )
                         }
@@ -675,7 +631,7 @@ fun ResultPopup(
                         LottieAnimation(
                             composition = composition,
                             progress = progress,
-                            modifier = Modifier.size(100.dp)
+                            modifier = Modifier.size(animationWidth)
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))
@@ -796,10 +752,16 @@ fun TargetScore(
                                 .background(Color(0xFF42A5F5).copy(alpha = 0.2f), shape = CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.target_image),
-                                contentDescription = "Target Icon",
-                                modifier = Modifier.size(80.dp)
+                            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.target))
+                            val progress by animateLottieCompositionAsState(
+                                composition,
+                                iterations = LottieConstants.IterateForever
+                            )
+
+                            LottieAnimation(
+                                composition = composition,
+                                progress = progress,
+                                modifier = Modifier.size(100.dp)
                             )
                         }
 
@@ -870,10 +832,16 @@ fun TargetScore(
                             .background(Color(0xFF42A5F5).copy(alpha = 0.2f), shape = CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.target_image),
-                            contentDescription = "Target Icon",
-                            modifier = Modifier.size(80.dp)
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.target))
+                        val progress by animateLottieCompositionAsState(
+                            composition,
+                            iterations = LottieConstants.IterateForever
+                        )
+
+                        LottieAnimation(
+                            composition = composition,
+                            progress = progress,
+                            modifier = Modifier.size(100.dp)
                         )
                     }
 

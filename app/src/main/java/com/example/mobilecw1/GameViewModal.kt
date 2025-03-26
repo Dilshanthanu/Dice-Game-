@@ -1,6 +1,5 @@
 package com.example.mobilecw1
 
-import android.os.Bundle
 import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
@@ -25,6 +24,7 @@ class GameViewModal:ViewModel() {
     private var _computerWins = mutableStateOf(0)
     private var _computerTurns =  mutableStateOf(3)
     private var _diceAnimationKey = mutableStateOf(0)
+    private var _showTargetPopup = mutableStateOf(true)
 
 
     val diceNoHuman: List<Int> get() = _diceNoHuman.value
@@ -41,6 +41,7 @@ class GameViewModal:ViewModel() {
     val humanWins: Int get() = _humanWins.value
     val computerWins: Int get() = _computerWins.value
     val diceAnimationKey: Int get() = _diceAnimationKey.value
+    val showTargetPopup: Boolean get() = _showTargetPopup.value
 
     fun CalculateScoreHumen() {
         _humanScore.value += _diceNoHuman.value.sum()
@@ -67,6 +68,7 @@ class GameViewModal:ViewModel() {
             repeat(_computerTurns.value) {
                 delay(1000)
                 _diceNoComputer.value = ComputerDiceReroll()
+                Log.d("xxxxxxxxxx" , _diceNoComputer.value.toString())
             }
             CalculateScoreComputer()
         }
@@ -75,15 +77,26 @@ class GameViewModal:ViewModel() {
             Result()
         }
         _turns.value = 3
+        if (_computerTurns.value < 3) {
+            _computerTurns.value = 3
+        }
 
     }
 
     fun ResetGame() {
         _diceNoHuman.value = List(5) { 1 }
         _diceNoComputer.value = List(5) { 1 }
-        _turns.value = 3
+        _turns.value = 0
         _humanScore.value = 0
         _computerScore.value = 0
+        _humanSelectedDice.value = List(5) { 0 }
+        _showWonPopup.value = false
+        _showLosePopup.value = false
+        _showTiePopup.value = false
+        _isCalculationCompleted.value = true
+        _computerTurns.value = 3
+        _diceAnimationKey.value = 0
+        _showTargetPopup.value = true
     }
 
     fun ComputerDiceReroll(): List<Int> {
@@ -149,7 +162,6 @@ class GameViewModal:ViewModel() {
 
     fun CheckResult(humanscore: Int, computescore: Int): Boolean {
         if (humanscore < _targetScore.value && computescore < _targetScore.value) {
-            _turns.value += 1;
             return false
         } else {
             _turns.value = 0;
@@ -180,34 +192,32 @@ class GameViewModal:ViewModel() {
         _targetScore.value = newScore
     }
 
-    fun RerollOnclick(){
-        if (!_humanSelectedDice.value.all { it == 0 }) {
-            var n: Int = 0
-            for (i in _humanSelectedDice.value) {
-                if (i != 0) {
-                    _diceNoHuman.value = _diceNoHuman.value.toMutableList().also { it[n] = i }
-                    n++
-                } else if (i == 0) {
-                    _diceNoHuman.value =
-                        _diceNoHuman.value.toMutableList().also { it[n] = SingelNoGen() }
+    fun RerollOnclick() {
+        if (_turns.value > 0) {
+            if (!_humanSelectedDice.value.all { it == 0 }) {
+                var n = 0
+                for (i in _humanSelectedDice.value) {
+                    if (i != 0) {
+                        _diceNoHuman.value = _diceNoHuman.value.toMutableList().also { it[n] = i }
+                    } else {
+                        _diceNoHuman.value =
+                            _diceNoHuman.value.toMutableList().also { it[n] = SingelNoGen() }
+                    }
                     n++
                 }
-            }
-            _humanSelectedDice.value = List(_humanSelectedDice.value.size) { 0 }
-            _turns.value -= 1
-            if(_turns.value == 0){
-                CalculateScoreHumen()
+                _humanSelectedDice.value = List(_humanSelectedDice.value.size) { 0 }
+            } else {
+                _diceNoHuman.value = DiceListGen()
             }
 
-        }else {
-            _diceNoHuman.value = DiceListGen()
             _turns.value -= 1
+
+            if (_turns.value == 0) {
+                CalculateScoreHumen()
+            }
         }
     }
 
-    fun dicekey(){
-        _diceAnimationKey.value++
-    }
     fun isGameDataReset(): Boolean {
         return _diceNoHuman.value.all { it == 1 } &&
                 _diceNoComputer.value.all { it == 1 } &&
@@ -239,7 +249,13 @@ class GameViewModal:ViewModel() {
         _computerWins.value = 0
         _computerTurns.value = 3
         _diceAnimationKey.value = 0
+        _showTargetPopup.value = true
     }
+
+    fun targetOnDismiss(){
+        _showTargetPopup.value = false
+    }
+
 
 }
 

@@ -45,18 +45,21 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GameApp(viewModal: GameViewModal){
+fun GameApp(viewModel: GameViewModal) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination  = Routes.LandingPage , builder = {
-        composable(Routes.LandingPage){
-            LandingPage(navController, viewModal)
+    NavHost(navController = navController, startDestination = Routes.LandingPage) {
+        composable(Routes.LandingPage) {
+            LandingPage(navController, viewModel)
         }
-        composable(Routes.NewGame){
-            GamePage(navController, viewModal)
+        composable(Routes.AnimationScreen) {
+            DiceAnimationScreen(navController, viewModel)
         }
-
-    })
+        composable(Routes.NewGame) {
+            GamePage(navController, viewModel)
+        }
+    }
 }
+
 
 
 

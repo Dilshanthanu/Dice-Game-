@@ -1,8 +1,11 @@
 package com.example.mobilecw1
 
 import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,16 +34,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import com.airbnb.lottie.compose.*
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
+
 
 @Composable
-fun LandingPage(navController: NavController , viewModal: GameViewModal) {
+fun LandingPage(navController: NavController, viewModal: GameViewModal) {
     var showAboutPopup by remember { mutableStateOf(false) }
 
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.dice))
@@ -52,10 +61,14 @@ fun LandingPage(navController: NavController , viewModal: GameViewModal) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
 
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(Color.Black, Color(0xFF1C1C1C), Color(0xFF101820))
+    )
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF101820))
+            .background(gradientBrush)
     ) {
         LottieAnimation(
             composition = composition,
@@ -86,63 +99,27 @@ fun LandingPage(navController: NavController , viewModal: GameViewModal) {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Button(
-                        onClick = {
-                            navController.navigate(Routes.NewGame)
-                            viewModal.resetGameData()
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth(0.5f)
-                            .height(50.dp)
-                    ) {
-                        Text(
-                            text = "NEW GAME",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
+                    FancyButton(
+                        text = "NEW GAME",
+                        onClick = { navController.navigate(Routes.AnimationScreen) },
+                        modifier = Modifier.fillMaxWidth(0.5f)
+                    )
+
+                    if (!viewModal.isGameDataReset()) {
+                        FancyButton(
+                            text = "CONTINUE",
+                            onClick = { navController.navigate(Routes.NewGame) },
+                            modifier = Modifier.fillMaxWidth(0.5f)
                         )
                     }
-                    if (!viewModal.isGameDataReset()) {
 
-                        Button(
-                            onClick = {
-                                navController.navigate(Routes.NewGame)
-
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(50.dp)
-                        ) {
-                            Text(
-                                text = "CONTINUE",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                        Button(
-                            onClick = { showAboutPopup = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth(0.5f)
-                                .height(50.dp)
-                        ) {
-                            Text(
-                                text = "ABOUT",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
-
+                    FancyButton(
+                        text = "ABOUT",
+                        onClick = { showAboutPopup = true },
+                        modifier = Modifier.fillMaxWidth(0.5f),
+                        gradientColors = listOf(Color.Red, Color.Magenta)
+                    )
+                }
             }
         } else {
             Column(
@@ -161,122 +138,93 @@ fun LandingPage(navController: NavController , viewModal: GameViewModal) {
                 )
 
                 if (!viewModal.isGameDataReset()) {
-                    // Row for New Game and Continue buttons when Continue is visible
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Button(
-                            onClick = {
-                                navController.navigate(Routes.NewGame)
-                                viewModal.resetGameData()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = "NEW GAME",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                        FancyButton(
+                            text = "NEW GAME",
+                            onClick = { navController.navigate(Routes.AnimationScreen) },
+                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                        )
 
-                        Button(
-                            onClick = {
-                                navController.navigate(Routes.NewGame)
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .padding(start = 8.dp)
-                        ) {
-                            Text(
-                                text = "CONTINUE",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                        FancyButton(
+                            text = "CONTINUE",
+                            onClick = { navController.navigate(Routes.NewGame) },
+                            modifier = Modifier.weight(1f).padding(start = 8.dp)
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
+                    FancyButton(
+                        text = "ABOUT",
                         onClick = { showAboutPopup = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth(0.6f)
-                            .height(50.dp)
-                    ) {
-                        Text(
-                            text = "ABOUT",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
+                        modifier = Modifier.fillMaxWidth(0.6f),
+                        gradientColors = listOf(Color.Red, Color.Magenta)
+                    )
                 } else {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Button(
-                            onClick = {
-                                navController.navigate(Routes.NewGame)
-                                viewModal.resetGameData()
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Blue),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .padding(end = 8.dp)
-                        ) {
-                            Text(
-                                text = "NEW GAME",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                        FancyButton(
+                            text = "NEW GAME",
+                            onClick = { navController.navigate(Routes.AnimationScreen) },
+                            modifier = Modifier.weight(1f).padding(end = 8.dp)
+                        )
 
-                        Button(
+                        FancyButton(
+                            text = "ABOUT",
                             onClick = { showAboutPopup = true },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color.Red),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(50.dp)
-                                .padding(start = 8.dp)
-                        ) {
-                            Text(
-                                text = "ABOUT",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
+                            modifier = Modifier.weight(1f).padding(start = 8.dp),
+                            gradientColors = listOf(Color.Red, Color.Magenta)
+                        )
                     }
                 }
             }
         }
-        }
+    }
 
     if (showAboutPopup) {
         AboutPopup(onDismiss = { showAboutPopup = false })
     }
 }
 
-
-
+@Composable
+fun FancyButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    gradientColors: List<Color> = listOf(Color.Cyan, Color.Blue),
+    backgroundColor: Color = Color(0x2FFFFFFF),
+    textColor: Color = Color.White,
+    shape: Shape = RoundedCornerShape(20.dp),
+    elevation: Dp = 6.dp,
+    fontSize: TextUnit = 18.sp
+) {
+    Surface(
+        shape = shape,
+        color = backgroundColor.copy(alpha = 0.15f),
+        shadowElevation = elevation,
+        border = BorderStroke(2.dp, Brush.linearGradient(gradientColors)),
+        modifier = modifier.clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(vertical = 14.dp, horizontal = 24.dp)
+                .background(Color.Transparent),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = text,
+                color = textColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = fontSize
+            )
+        }
+    }
+}
 
 @Composable
 fun AboutPopup(onDismiss: () -> Unit) {
@@ -359,5 +307,6 @@ fun AboutPopup(onDismiss: () -> Unit) {
             .background(Color.White, shape = RoundedCornerShape(12.dp))
             .padding(16.dp)
     )
+
 }
 
